@@ -1,0 +1,95 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+
+model User {
+  id        String  @id @default(uuid())
+  email     String  @unique
+  name      String
+  password  String
+  privacyPublicDashboard Boolean @default(false)
+  groups    GroupMember[]
+  createdAt DateTime @default(now())
+}
+
+model Group {
+  id        String @id @default(uuid())
+  name      String
+  members   GroupMember[]
+  expenses  Expense[]
+  createdAt DateTime @default(now())
+}
+
+model GroupMember {
+  id        String @id @default(uuid())
+  user      User   @relation(fields: [userId], references: [id])
+  userId    String
+  group     Group  @relation(fields: [groupId], references: [id])
+  groupId   String
+  role      String
+  canManageExpenses Boolean @default(false)
+}
+
+model Expense {
+  id          String   @id @default(uuid())
+  group       Group    @relation(fields: [groupId], references: [id])
+  groupId     String
+  createdBy   String
+  reason      String
+  paymentMethod String?
+  status      String
+  expenseDate DateTime
+  payers      ExpensePayer[]
+  beneficiaries ExpenseBeneficiary[]
+}
+
+model ExpensePayer {
+  id        String @id @default(uuid())
+  expense   Expense @relation(fields: [expenseId], references: [id])
+  expenseId String
+  userId    String
+  amountCents Int
+}
+
+model ExpenseBeneficiary {
+  id        String @id @default(uuid())
+  expense   Expense @relation(fields: [expenseId], references: [id])
+  expenseId String
+  userId    String
+  amountCents Int
+}
+
+model Approval {
+  id        String @id @default(uuid())
+  entityType String
+  entityId   String
+  userId     String
+  status     String
+}
+
+model LedgerEntry {
+  id        String @id @default(uuid())
+  groupId   String
+  fromUser  String
+  toUser    String
+  amountCents Int
+  type      String
+  createdAt DateTime @default(now())
+}
+
+model Settlement {
+  id        String   @id @default(uuid())
+  groupId   String
+  fromUser  String
+  toUser    String
+  amountCents Int
+  note      String?
+  status    String   // pending | accepted | rejected
+  createdAt DateTime @default(now())
+}
