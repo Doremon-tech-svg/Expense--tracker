@@ -1,9 +1,11 @@
 import { Router } from "express";
 import { PrismaClient } from "@prisma/client";
+import { auth } from "../middleware/auth";
 
 const router = Router();
 const prisma = new PrismaClient();
 
+// GENERIC APPROVAL (used by system + UI)
 router.post("/", async (req, res) => {
   const { entityId, userId, status } = req.body;
 
@@ -30,7 +32,6 @@ router.post("/", async (req, res) => {
     });
 
     if (expense) {
-      // generate ledger records
       for (const b of expense.beneficiaries) {
         for (const p of expense.payers) {
           if (b.userId !== p.userId) {
@@ -47,6 +48,32 @@ router.post("/", async (req, res) => {
         }
       }
     }
+  }
+
+  res.json({ ok: true });
+});
+
+
+// USER APPROVE BUTTON
+router.post("/:id/approve", auth, async (req: any, res) => {
+  const { id } = req.params;
+
+  const approval = await prisma.approval.update({
+    where: { id },
+    data: { status: "approved" },
+  });
+
+  const approvals = await prisma.approval.findMany({
+    where: { entityId: approval.entityId, entityType: "expense" }
+  });
+
+  const allApproved = approvals.every(a => a.status === "approved");
+
+  if (allApproved) {
+    await prisma.expense.update({
+      where: { id: approval.entityId },
+      data: { status: "active" }
+    });
   }
 
   res.json({ ok: true });

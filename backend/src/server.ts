@@ -8,14 +8,22 @@ import expenseRoutes from "./routes/expenses";
 import approvalRoutes from "./routes/approvals";
 import settlementRoutes from "./routes/settlements";
 import dashboardRoutes from "./routes/dashboard";
+import cookieParser from "cookie-parser";
+
 
 dotenv.config();
 
 const app = express();
 const prisma = new PrismaClient();
 
-app.use(cors());
+app.use(
+  cors({
+    origin: "http://localhost:5173",
+    credentials: true,
+  })
+);
 app.use(express.json());
+app.use(cookieParser());
 
 app.get("/", (req, res) => {
   res.json({ status: "OK" });

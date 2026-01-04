@@ -5,9 +5,8 @@ import { auth } from "../middleware/auth";
 const router = Router();
 const prisma = new PrismaClient();
 
-
 //
-// HELPERS
+// helper
 //
 async function createExpenseForGroup(body: any, userId: string) {
   const {
@@ -29,14 +28,14 @@ async function createExpenseForGroup(body: any, userId: string) {
       expenseDate,
 
       payers: {
-        create: payers?.map((p: any) => ({
+        create: (payers || []).map((p: any) => ({
           userId: p.userId,
           amountCents: p.amountCents,
         })),
       },
 
       beneficiaries: {
-        create: beneficiaries?.map((b: any) => ({
+        create: (beneficiaries || []).map((b: any) => ({
           userId: b.userId,
           amountCents: b.amountCents,
         })),
@@ -50,26 +49,10 @@ async function createExpenseForGroup(body: any, userId: string) {
 }
 
 //
-// NEW — POST /groups/:groupId/expenses
+// 🔹 CREATE EXPENSE
+// FULL PATH: POST /expenses
 //
-router.post("/groups/:groupId/expenses", auth, async (req: any, res) => {
-  try {
-    const expense = await createExpenseForGroup(
-      { ...req.body, groupId: req.params.groupId },
-      req.userId
-    );
-
-    res.json(expense);
-  } catch (e) {
-    console.error(e);
-    res.status(500).json({ error: "Failed to create expense" });
-  }
-});
-
-//
-// LEGACY — POST /expenses
-//
-router.post("/expenses", auth, async (req: any, res) => {
+router.post("/", auth, async (req: any, res) => {
   try {
     const expense = await createExpenseForGroup(req.body, req.userId);
     res.json(expense);
@@ -79,32 +62,11 @@ router.post("/expenses", auth, async (req: any, res) => {
   }
 });
 
-
 //
-// LIST — NEW: GET /groups/:groupId/expenses
+// 🔹 LIST EXPENSES FOR GROUP
+// FULL PATH: GET /expenses/group/:groupId
 //
-router.get("/groups/:groupId/expenses", auth, async (req, res) => {
-  try {
-    const expenses = await prisma.expense.findMany({
-      where: { groupId: req.params.groupId },
-      orderBy: { expenseDate: "desc" },
-      include: {
-        payers: true,
-        beneficiaries: true,
-      },
-    });
-
-    res.json(expenses);
-  } catch (e) {
-    console.error(e);
-    res.status(500).json({ error: "Failed to load expenses" });
-  }
-});
-
-//
-// LIST — LEGACY: GET /expenses/group/:groupId
-//
-router.get("/expenses/group/:groupId", auth, async (req, res) => {
+router.get("/group/:groupId", auth, async (req, res) => {
   try {
     const expenses = await prisma.expense.findMany({
       where: { groupId: req.params.groupId },

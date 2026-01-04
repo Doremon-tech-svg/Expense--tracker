@@ -76,4 +76,41 @@ router.get("/:groupId/members", auth, async (req, res) => {
   );
 });
 
+// ADD MEMBER TO GROUP
+router.post("/:groupId/members", auth, async (req: any, res) => {
+  const { groupId } = req.params;
+  const { email, canManageExpenses } = req.body;
+
+  const user = await prisma.user.findUnique({
+    where: { email }
+  });
+
+  if (!user) return res.status(404).json({ error: "User not found" });
+
+  const member = await prisma.groupMember.create({
+    data: {
+      groupId,
+      userId: user.id,
+      role: "MEMBER",
+      canManageExpenses: !!canManageExpenses,
+    }
+  });
+
+  res.json(member);
+});
+
+
+// REMOVE MEMBER
+router.delete("/:groupId/members/:userId", auth, async (req, res) => {
+  const { groupId, userId } = req.params;
+
+  await prisma.groupMember.deleteMany({
+    where: { groupId, userId }
+  });
+
+  res.json({ ok: true });
+});
+
+
+
 export default router;
