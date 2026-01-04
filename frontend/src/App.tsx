@@ -3,38 +3,48 @@ import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import Groups from "./pages/Groups";
 import GroupDetail from "./pages/GroupDetail";
-
-function PrivateRoute({ children }: { children: JSX.Element }) {
-  const token = localStorage.getItem("token");
-  return token ? children : <Navigate to="/login" replace />;
-}
+import Dashboard from "./pages/Dashboard";
+import Layout from "./components/Layout";
 
 export default function App() {
   return (
     <BrowserRouter>
       <Routes>
+
+        {/* PUBLIC ROUTES */}
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
+
+        {/* PROTECTED ROUTES */}
+        <Route
+          path="/dashboard"
+          element={
+            <Layout>
+              <Dashboard />
+            </Layout>
+          }
+        />
 
         <Route
           path="/groups"
           element={
-            <PrivateRoute>
+            <Layout>
               <Groups />
-            </PrivateRoute>
+            </Layout>
           }
         />
 
         <Route
           path="/groups/:id"
           element={
-            <PrivateRoute>
+            <Layout>
               <GroupDetail />
-            </PrivateRoute>
+            </Layout>
           }
         />
 
-        <Route path="*" element={<Navigate to="/groups" />} />
+        {/* DEFAULT — go to groups instead of dashboard */}
+        <Route path="*" element={<Navigate to="/groups" replace />} />
       </Routes>
     </BrowserRouter>
   );
