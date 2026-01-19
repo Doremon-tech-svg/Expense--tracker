@@ -1,147 +1,149 @@
-# Group Expense App (MVP)
+# 💸 Group Expense App (MVP)
 
-## 1. What this project is
+A **mobile‑first group expense, debt, and settlement tracking web application**, inspired by Splitwise but intentionally designed to prioritize **accuracy, transparency, and auditability** over shortcuts.
 
-This is a **mobile‑first group expense, debt, and settlement tracking web application**, similar in concept to Splitwise, but designed with:
-
-* Approval‑based expenses
-* Full transparency
-* Auditability
-* Accuracy over convenience
-
-The app is intended for **small groups (10–20 people)** who want a shared financial ledger.
+This project is an **MVP scaffold**, suitable for **small groups (10–20 people)** who want a shared, trustworthy financial ledger rather than a quick‑and‑dirty splitter.
 
 ---
 
-## 2. High‑level architecture
+## ✨ Key Principles
 
-### Tech stack
+* **Approval‑based expenses** – no silent changes
+* **Full transparency** – every amount is traceable
+* **Auditability** – data model favors correctness
+* **Accuracy > convenience** – intentional trade‑offs
 
-**Frontend**
+---
+
+## 🏗 High‑Level Architecture
+
+### Tech Stack
+
+#### Frontend
 
 * React + TypeScript
 * Vite
 * React Router
 * TanStack React Query
 * Axios
-* TailwindCSS (basic styling, not fully polished yet)
+* TailwindCSS (functional styling, not yet polished)
 
-**Backend**
+#### Backend
 
 * Node.js + Express
 * TypeScript
 * Prisma ORM
 * PostgreSQL
-* JWT authentication (stored in HTTP‑only cookies)
+* JWT authentication (HTTP‑only cookies)
 
 ---
 
-## 3. Core domain model (Prisma schema)
+## 🧠 Core Domain Model (Prisma Schema Overview)
 
 ### User
 
-* id
-* email
-* name
-* password
-* privacyPublicDashboard
+* `id`
+* `email`
+* `name`
+* `password`
+* `privacyPublicDashboard`
 
 ### Group
 
-* id
-* name
-* members
-* expenses
+* `id`
+* `name`
+* `members`
+* `expenses`
 
 ### GroupMember
 
-* userId
-* groupId
-* role (ADMIN / MEMBER)
-* canManageExpenses
+* `userId`
+* `groupId`
+* `role` (ADMIN | MEMBER)
+* `canManageExpenses`
 
 ### Expense
 
-* groupId
-* createdBy
-* reason
-* paymentMethod
-* expenseDate
-* status (pending | active)
-* payers
-* beneficiaries
+* `groupId`
+* `createdBy`
+* `reason`
+* `paymentMethod`
+* `expenseDate`
+* `status` (pending | active)
+* `payers`
+* `beneficiaries`
 
 ### ExpensePayer
 
-* userId
-* amountCents
+* `userId`
+* `amountCents`
 
 ### ExpenseBeneficiary
 
-* userId
-* amountCents
+* `userId`
+* `amountCents`
 
 ### Approval
 
-* entityType (expense)
-* entityId
-* userId
-* status
+* `entityType` (expense)
+* `entityId`
+* `userId`
+* `status`
 
 ### LedgerEntry
 
-* groupId
-* fromUser
-* toUser
-* amountCents
-* type
+* `groupId`
+* `fromUser`
+* `toUser`
+* `amountCents`
+* `type`
 
 ### Settlement
 
-* groupId
-* fromUser
-* toUser
-* amountCents
-* status
+* `groupId`
+* `fromUser`
+* `toUser`
+* `amountCents`
+* `status`
 
 ---
 
-## 4. Functional scope implemented so far
+## ✅ Functional Scope (Current State)
 
-### ✅ Authentication
+### Authentication
 
 * Signup & Login
 * JWT issued on login
 * JWT stored in HTTP‑only cookie
 * Middleware validates cookie or Authorization header
 
-### ✅ Groups
+### Groups
 
 * Create group
 * Creator auto‑added as ADMIN
-* List groups user belongs to
+* List user’s groups
 * View group details
 
-### ✅ Expenses (basic)
+### Expenses (Basic)
 
 * Add expense to a group
 * Multiple payers
 * Multiple beneficiaries
-* Expense created in `pending` state
-* Expense visible in group list
+* Expenses start in `pending` state
+* Visible in group expense list
 
-### ⚠️ Approvals (partial)
+### Approvals (Partial)
 
 * Approval records exist in DB
 * Backend logic drafted
-* UI for approvals not implemented yet
+* ❌ UI not implemented yet
 
-### ⚠️ Ledger
+### Ledger (Draft)
 
-* Ledger generation logic drafted
-* Not fully validated yet
+* Ledger generation logic exists
+* ❌ Not fully validated
 
-### ✅ Dashboard (basic)
+### Dashboard (Basic)
 
 * Total paid
 * Total owed
@@ -150,7 +152,7 @@ The app is intended for **small groups (10–20 people)** who want a shared fina
 
 ---
 
-## 5. Current frontend structure
+## 🧭 Frontend Structure
 
 ```
 frontend/src
@@ -176,7 +178,7 @@ frontend/src
 
 ---
 
-## 6. Backend structure
+## 🗄 Backend Structure
 
 ```
 backend/src
@@ -196,100 +198,94 @@ backend/src
 
 ---
 
-## 7. Major problems encountered (important context for AI agent)
+## ⚠️ Major Issues Encountered (Important Context)
 
-### Prisma version issues
+### Prisma Version Instability
 
 * Prisma v7 introduced breaking changes
 * Datasource URL moved to `prisma.config.ts`
 * Migration failures until version stabilized
 
-### Authentication confusion
+### Authentication Confusion
 
-* Initially mixed token‑in‑header and cookie auth
-* Resulted in frequent 401 errors
+* Initially mixed header‑based tokens and cookies
+* Caused frequent `401` errors
 * Resolved by:
 
-  * Proper CORS config
+  * Correct CORS configuration
   * `withCredentials: true`
   * Cookie parsing middleware
 
-### CORS errors
+### CORS Misconfiguration
 
-* Using `credentials: true` with `origin: "*"` caused blocking
+* `credentials: true` + `origin: "*"` caused blocking
 * Fixed by explicitly allowing `http://localhost:5173`
 
-### Route mismatches
+### Route Mismatches
 
 * Frontend called `/expenses`
-* Backend mounted `/expenses` router incorrectly
-* Resulted in repeated 404s
+* Backend router mounted incorrectly
+* Resulted in repeated `404` errors
 
-### UI instability
+### UI Instability
 
-* Dashboard crashed when API returned 401
-* Fixed by defensive rendering
+* Dashboard crashed on `401` API responses
+* Fixed via defensive rendering
 
-### Scope creep
+### Scope Creep
 
-* Tried to implement:
-
-  * members
-  * approvals
-  * dashboard
-  * ledger
-    all at once
-* Decision taken to **stabilize navigation + core flows first**
+* Tried to implement members, approvals, dashboard, and ledger simultaneously
+* Decision made to **stabilize navigation and core flows first**
 
 ---
 
-## 8. Current status (important)
+## 📌 Current Status
 
 ✔ App runs end‑to‑end
-✔ Login works
-✔ Groups load
+✔ Authentication works
+✔ Groups load correctly
 ✔ Expenses can be created
 ✔ Dashboard loads
 
-❌ Approval UX not complete
-❌ Ledger math not verified
+❌ Approval UX incomplete
+❌ Ledger math unverified
 ❌ Member management temporarily removed
-❌ UI needs polishing
+❌ UI needs polish
 
-This is an **MVP scaffold**, not production ready.
+⚠️ **This is an MVP scaffold — not production ready.**
 
 ---
 
-## 9. What should be done next (clear roadmap)
+## 🛣 Roadmap
 
-### Phase 1 (Stability)
+### Phase 1 — Stability
 
 * Lock routes & API contracts
-* Clean approvals table logic
-* Ensure expense list refresh after creation
+* Clean approval logic
+* Ensure expense list refreshes correctly
 
-### Phase 2 (Approvals)
+### Phase 2 — Approvals
 
 * Show pending approvals per user
-* Approve / reject expense
+* Approve / reject expenses
 * Activate expense only after threshold
 
-### Phase 3 (Ledger)
+### Phase 3 — Ledger
 
 * Correct debt calculation
 * Net off ledger entries
 * Group‑level balances
 
-### Phase 4 (UX)
+### Phase 4 — UX
 
-* Better expense form
+* Improved expense form
 * Member selection UI
 * Filters
 * Mobile polish
 
 ---
 
-## 10. How to run the project
+## ▶️ Running the Project
 
 ### Backend
 
@@ -307,21 +303,22 @@ npm install
 npm run dev
 ```
 
-Postgres must be running and `DATABASE_URL` set.
+> PostgreSQL must be running and `DATABASE_URL` must be set.
 
 ---
 
-## 11. Important note for future AI agents
+## 🤖 Important Note for Future AI Agents
 
 This project:
 
 * Is **incrementally built**
-* Has **known broken/partial features** intentionally paused
-* Prioritizes correctness over speed
+* Contains **intentionally paused / partial features**
+* Prioritizes **correctness over speed**
 
-Do **not** refactor everything at once.
-Fix one domain (auth / groups / expenses / approvals) fully before moving on.
+🚫 Do **not** refactor everything at once.
+
+✅ Pick **one domain** (auth, groups, expenses, approvals, ledger) and stabilize it fully before moving on.
 
 ---
 
-End of summary.
+*End of README*
